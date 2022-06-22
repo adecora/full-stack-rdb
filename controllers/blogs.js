@@ -18,9 +18,27 @@ router.post('/', async (req, res) => {
   }
 })
 
+const blogFinder = async (req, res, next) => {
+  req.blog = await Blog.findByPk(req.params.id)
+  console.log(JSON.stringify(req.blog, null, 2))
+  next()
+}
+
 router.delete('/:id', async (req, res) => {
-  await Blog.destroy({ where: { id: req.params.id } })
+  if (req.blog) {
+    await req.blog.destroy()
+  }
   res.status(204).end()
 });
+
+router.put('/:id', blogFinder, async (req, res) => {
+  if (req.blog) {
+    req.blog.likes = req.body.likes
+    await req.blog.save({ fields: ['likes'] })
+    res.json(req.blog)
+  } else {
+    res.status(404).end()
+  }
+})
 
 module.exports = router
