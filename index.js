@@ -1,5 +1,5 @@
 require('dotenv').config()
-const { Sequelize, Model, DataTypes } = require('sequelize');
+const { Sequelize, Model, DataTypes } = require('sequelize')
 const express = require('express')
 const app = express()
 
@@ -11,48 +11,62 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
       require: true,
       rejectUnauthorized: false
     }
-  },
+  }
 })
 
-class Note extends Model {}
-Note.init({
+class Blog extends Model {}
+Blog.init({
   id: {
     type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
+    autoIncrement: true,
+    primaryKey: true
   },
-  content: {
-    type: DataTypes.TEXT,
+  author: {
+    type: DataTypes.STRING(1024)
+  },
+  url: {
+    type: DataTypes.STRING(1024),
     allowNull: false
   },
-  important: {
-    type: DataTypes.BOOLEAN
+  title: {
+    type: DataTypes.STRING(1024),
+    allowNull: false
   },
-  date: {
-    type: DataTypes.DATE
+  likes: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
   }
 }, {
   sequelize,
   underscored: true,
   timestamps: false,
-  modelName: 'note'
+  modelName: 'blog'
 })
 
-app.get('/api/notes', async (req, res) => {
-  const notes = await Note.findAll()
-  res.json(notes)
+Blog.sync()  // Creates the table if it doesn't exist (and does nothing if it already exists)
+
+app.get('/api/blogs', async (req, res) => {
+  const blogs = await Blog.findAll()
+  console.log(JSON.stringify(blogs, null, 2))
+  res.json(blogs)
 })
 
-app.post('/api/notes', async (req, res) => {
+app.post('/api/blogs', async (req, res) => {
   try {
-    const note = await Note.create(req.body)
-    return res.json(note)
+    const blog = await Blog.create(req.body)
+    console.log(JSON.stringify(blog, null, 2))
+    res.json(blog)
   } catch (error) {
     res.status(400).json({ error })
   }
 })
 
-const PORT = process.env.PORT || 3001;
+app.delete('/api/blogs/:id', async (req, res) => {
+  await Blog.destroy({ where: { id: req.params.id } })
+  res.status(204).end()
+});
+
+const PORT = process.env.port || 3001;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+  console.log(`Server listening on port ${PORT}`)
 })
