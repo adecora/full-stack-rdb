@@ -2,6 +2,8 @@ const router = require('express').Router()
 
 const { Blog } = require('../models')
 
+const blogFinder = require('../util/middleware').blogFinder(Blog)
+
 router.get('/', async (req, res) => {
   const blogs = await Blog.findAll()
   console.log(JSON.stringify(blogs, null, 2))
@@ -9,20 +11,10 @@ router.get('/', async (req, res) => {
 })
 
 router.post('/', async (req, res) => {
-  try {
-    const blog = await Blog.create(req.body)
-    console.log(JSON.stringify(blog, null, 2))
-    res.json(blog)
-  } catch (error) {
-    res.status(400).json({ error })
-  }
+  const blog = await Blog.create(req.body)
+  console.log(JSON.stringify(blog, null, 2))
+  res.json(blog)
 })
-
-const blogFinder = async (req, res, next) => {
-  req.blog = await Blog.findByPk(req.params.id)
-  console.log(JSON.stringify(req.blog, null, 2))
-  next()
-}
 
 router.delete('/:id', async (req, res) => {
   if (req.blog) {
