@@ -1,17 +1,22 @@
+const bcrypt = require('bcrypt')
+const { response } = require('express')
 const router = require('express').Router()
 
-const { Blog } = require('../models')
+const { Blog, User } = require('../models')
 
 const blogFinder = require('../util/middleware').blogFinder(Blog)
 
 router.get('/', async (req, res) => {
-  const blogs = await Blog.findAll()
+  const blogs = await Blog.findAll({
+    attributes: { exclude: ['id', 'userId'] }
+  })
   console.log(JSON.stringify(blogs, null, 2))
   res.json(blogs)
 })
 
 router.post('/', async (req, res) => {
-  const blog = await Blog.create(req.body)
+  const user = await User.findByPk(1)
+  const blog = await Blog.create({ ...req.body, userId: user.id })
   console.log(JSON.stringify(blog, null, 2))
   res.json(blog)
 })
