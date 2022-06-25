@@ -10,7 +10,11 @@ const UserException = require('../util/error')
 route.get('/', async (req, res) => {
   const users = await User.findAll({
     attributes: { 
-      exclude: ['id', 'passwordHash', 'createdAt', 'updatedAt'] 
+      exclude: ['id', 'passwordHash', 'createdAt', 'updatedAt'],
+    },
+    include: {
+      model: Blog,
+      attributes: { exclude: 'userId' }
     }
   })
   console.log(JSON.stringify(users, null, 2))
