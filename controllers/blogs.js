@@ -1,4 +1,3 @@
-const bcrypt = require('bcrypt')
 const { Op } = require('sequelize')
 const router = require('express').Router()
 
