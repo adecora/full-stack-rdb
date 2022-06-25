@@ -10,11 +10,15 @@ const { tokenExtractor } = require('../util/middleware')
 const UserException = require('../util/error')
 
 router.get('/', async (req, res) => {
-  const where = {}
+  let where = {}
 
   if (req.query.search) {
-    where.title= {
-      [Op.substring]: req.query.search
+    where = {
+      ...where,
+      [Op.or]: [
+        { author: { [Op.substring]: req.query.search } },
+        { title: { [Op.substring]: req.query.search } }
+      ]
     }
   }
 
