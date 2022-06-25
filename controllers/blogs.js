@@ -5,6 +5,7 @@ const router = require('express').Router()
 const { Blog, User } = require('../models')
 
 const blogFinder = require('../util/middleware').blogFinder(Blog)
+const { tokenExtractor } = require('../util/middleware')
 
 router.get('/', async (req, res) => {
   const blogs = await Blog.findAll({
@@ -14,10 +15,10 @@ router.get('/', async (req, res) => {
   res.json(blogs)
 })
 
-router.post('/', async (req, res) => {
-  const user = await User.findByPk(1)
+router.post('/', tokenExtractor, async (req, res) => {
+  const user = await User.findByPk(req.decodedToken.id)
   const blog = await Blog.create({ ...req.body, userId: user.id })
-  console.log(JSON.stringify(blog, null, 2))
+  console.log(JSON.stringify(user, null, 2))
   res.json(blog)
 })
 

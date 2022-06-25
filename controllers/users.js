@@ -3,6 +3,10 @@ const route = require('express').Router()
 
 const { Blog, User } = require('../models')
 
+const { tokenExtractor } = require('../util/middleware')
+
+const UserException = require('../util/error')
+
 route.get('/', async (req, res) => {
   const users = await User.findAll({
     attributes: { 
@@ -29,7 +33,10 @@ route.post('/', async (req, res) => {
   res.json(user)
 })
 
-route.put('/:username', async (req, res) => {
+route.put('/:username', tokenExtractor, async (req, res) => {
+  if (req.decodedToken.username !== req.params.username) {
+    throw new UserException('unauthorized operation')
+  }
   const user = await User.findOne({ where: { username: req.params.username } })
   if (user) {
     console.log(JSON.stringify(user, null, 2))
