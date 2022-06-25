@@ -7,9 +7,11 @@ const { Blog, User } = require('../models')
 const blogFinder = require('../util/middleware').blogFinder(Blog)
 const { tokenExtractor } = require('../util/middleware')
 
+const UserException = require('../util/error')
+
 router.get('/', async (req, res) => {
   const blogs = await Blog.findAll({
-    attributes: { exclude: ['id', 'userId'] }
+    //attributes: { exclude: ['id', 'userId'] }
   })
   console.log(JSON.stringify(blogs, null, 2))
   res.json(blogs)
@@ -22,7 +24,10 @@ router.post('/', tokenExtractor, async (req, res) => {
   res.json(blog)
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', tokenExtractor, blogFinder, async (req, res) => {
+  if (req.decodedToken.id !== req.blog?.userId) {
+    throw new UserException('unauthorized operation')
+  }
   if (req.blog) {
     await req.blog.destroy()
   }
