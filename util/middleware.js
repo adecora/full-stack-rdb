@@ -24,7 +24,12 @@ const errorHandler = async (error, req, res, next) => {
   if (error.name === 'SequelizeDatabaseError') {
     return res.status(400).json({ error: error.message })
   } else if (error.name === 'SequelizeValidationError') {
-    return res.status(400).json({ error: error.message })
+    return res.status(400).json({ 
+      error: error.message.replace(
+        /(max|min) on year failed/, 
+        "year must be an integer at least equal to 1991 but not greater than the current year"
+      )
+    })
   } else if (error.name === 'JsonWebTokenError') {
     return res.status(401).json({ error: error.message })
   } else if (error.name === 'UserException') {
