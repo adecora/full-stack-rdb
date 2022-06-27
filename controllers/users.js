@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt')
 const router = require('express').Router()
 
-const { Blog, User, Reading } = require('../models')
+const { Blog, User, ReadingList } = require('../models')
 
 const { tokenExtractor } = require('../util/middleware')
 
@@ -33,7 +33,7 @@ router.get('/:id', async (req, res) => {
         exclude: ['userId', 'createdAt', 'updatedAt']
       },
       through: {
-        attributes: []
+        attributes: ['id', 'read']
       }
     }
   })
