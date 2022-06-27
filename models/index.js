@@ -5,7 +5,7 @@ const Reading = require('./reading')
 Blog.belongsTo(User)
 User.hasMany(Blog)
 
-User.belongsToMany(Blog, { through: Reading })
+User.belongsToMany(Blog, { through: Reading, as: 'readings' })
 Blog.belongsToMany(User, { through: Reading })
 
 // We use migrations to synchronizes our database.

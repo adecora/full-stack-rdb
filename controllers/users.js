@@ -1,16 +1,16 @@
 const bcrypt = require('bcrypt')
-const route = require('express').Router()
+const router = require('express').Router()
 
-const { Blog, User } = require('../models')
+const { Blog, User, Reading } = require('../models')
 
 const { tokenExtractor } = require('../util/middleware')
 
 const UserException = require('../util/error')
 
-route.get('/', async (req, res) => {
+router.get('/', async (req, res) => {
   const users = await User.findAll({
     attributes: { 
-      exclude: ['id', 'passwordHash', 'createdAt', 'updatedAt'],
+      exclude: ['passwordHash', 'createdAt', 'updatedAt'],
     },
     include: {
       model: Blog,
@@ -21,7 +21,27 @@ route.get('/', async (req, res) => {
   res.json(users)
 })
 
-route.post('/', async (req, res) => {
+router.get('/:id', async (req, res) => {
+  const user = await User.findByPk(req.params.id, {
+    attributes: { 
+      exclude: ['id', 'passwordHash', 'createdAt', 'updatedAt'] 
+    },
+    include: {
+      model: Blog,
+      as: 'readings',
+      attributes: {
+        exclude: ['userId', 'createdAt', 'updatedAt']
+      },
+      through: {
+        attributes: []
+      }
+    }
+  })
+  console.log(JSON.stringify(user, null, 2))
+  res.json(user)
+})
+
+router.post('/', async (req, res) => {
   const { username, name, password } = req.body
 
   const saltRounds = 10
@@ -37,7 +57,7 @@ route.post('/', async (req, res) => {
   res.json(user)
 })
 
-route.put('/:username', tokenExtractor, async (req, res) => {
+router.put('/:username', tokenExtractor, async (req, res) => {
   if (req.decodedToken.username !== req.params.username) {
     throw new UserException('unauthorized operation')
   }
@@ -52,4 +72,4 @@ route.put('/:username', tokenExtractor, async (req, res) => {
   }
 })
 
-module.exports = route
+module.exports = router
