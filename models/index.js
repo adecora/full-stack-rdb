@@ -6,7 +6,7 @@ Blog.belongsTo(User)
 User.hasMany(Blog)
 
 User.belongsToMany(Blog, { through: ReadingList, as: 'readings' })
-Blog.belongsToMany(User, { through: ReadingList })
+Blog.belongsToMany(User, { through: ReadingList, as: 'read_by' })
 
 // We use migrations to synchronizes our database.
 // Blog.sync({ alter: true })
