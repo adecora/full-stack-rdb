@@ -11,9 +11,9 @@ Following the course recommendation this part is developed on his own repository
 
 ```mermaid
 erDiagram
-    users ||--o{ blogs : writes
+    users ||--o{ blogs : "writed by"
     blogs {
-        integer id PK "not null"
+        integer id PK "autoincrement"
         timestamp created_at "not null, default now"
         timestamp updated_at "not null, default now"
         string author
@@ -24,7 +24,7 @@ erDiagram
         integre year
     }
     users {
-        integer id PK "not null"
+        integer id PK "autoincrement"
         timestamp created_at "not null, default now"
         timestamp updated_at "not null, default now"
         string username  "not null"
@@ -34,12 +34,18 @@ erDiagram
     migrations {
         string name "not null"
     }
-    users ||--o{ readings : have
-    blogs ||--o{ readings : added
-    readings {
-        integer id PK "not null"
+    users ||--o{ readinglists : have
+    blogs ||--o{ readinglists : "added to"
+    readinglists {
+        integer id PK "autoincrement"
         integer user_id FK "not null"
         integer blog_id FK "not null"
         boolean read "default false"
+    }
+    users ||--o{ active_sessions : "session by"
+    active_sessions {
+        integer id PK "autoincrement"
+        integer user_id FK "not null, unique"
+        string token "not null, unique"
     }
 ```

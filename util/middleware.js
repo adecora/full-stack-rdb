@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken')
 const { SECRET } = require('./config')
 
+const { Session, User } = require('../models')
+
 const blogFinder = (Blog) => (async (req, res, next) => {
   req.blog= await Blog.findByPk(req.params.id)
   console.log(JSON.stringify(req.blog, null, 2))
@@ -11,9 +13,25 @@ const tokenExtractor = async (req, res, next) => {
   const authorization = req.get('authorization')
   
   if(authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    req.decodedToken = jwt.verify(authorization.substring(7), SECRET)
+    const decodedToken = jwt.verify(authorization.substring(7), SECRET)
+    const session = await Session.findOne({
+      where: { userId: decodedToken.id, token: authorization.substring(7) }
+    })
+    if (!session) {
+      return res.status(401).json({ error: 'invalid session' })
+    }
+    
+    const user = await User.findByPk(session.userId)
+    if (user.disabled) {
+      await session.destroy()
+      return res.status(401).json({
+        error: 'account disabled, please contact admin'
+      })
+    }
+
+    req.decodedToken = { ...decodedToken, session: session }
   } else {
-    res.status(401).json({ error: 'token missing'})
+    res.status(401).json({ error: 'token missing' })
   }
 
   next()
@@ -34,6 +52,11 @@ const errorHandler = async (error, req, res, next) => {
     return res.status(401).json({ error: error.message })
   } else if (error.name === 'UserException') {
     return res.status(401).json({ error: error.message })
+  } else if (
+      error.name === 'SequelizeUniqueConstraintError' &&
+      error.original.constraint === 'active_sessions_user_id_key'
+    ) {
+      return res.status(401).json({ error: 'User is already login must logout.' })
   }
 
   next(error)
